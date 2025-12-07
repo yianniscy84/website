@@ -45,4 +45,49 @@ document.addEventListener('DOMContentLoaded', () => {
         section.classList.add('fade-in-section');
         observer.observe(section);
     });
+
+
+    // Handle Contact Form Submission
+    const contactForm = document.querySelector('.contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+
+            submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: data,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    // Success
+                    form.innerHTML = `
+                        <div class="success-message" style="text-align: center; padding: 2rem;">
+                            <h3 style="color: var(--accent-primary); margin-bottom: 1rem;">Message Sent! 🚀</h3>
+                            <p>Thanks for reaching out. I'll get back to you soon.</p>
+                        </div>
+                    `;
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.errors ? errorData.errors.map(err => err.message).join(", ") : "Oops! There was a problem submitting your form");
+                    submitBtn.textContent = originalBtnText;
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                alert("Oops! There was a problem submitting your form");
+                submitBtn.textContent = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
 });
